@@ -35,7 +35,8 @@ suzsh() {
 
     # 3. Run the command with user's tools in PATH
     # Prepend user's paths to root's PATH so both system and user tools are available
-    sudo ZDOTDIR=$HOME PATH="$HOME/.local/bin:$HOME/.fzf/bin:$PATH" zsh
+    # STARSHIP_CONFIG ensures starship uses user's prompt config, not root's
+    sudo ZDOTDIR=$HOME STARSHIP_CONFIG=$HOME/.config/starship.toml PATH="$HOME/.local/bin:$HOME/.fzf/bin:$PATH" zsh
 }
 
 # 2. Python defaults
@@ -114,7 +115,7 @@ dcdown() {
     fi
 }
 
-alias dps="docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'"
+alias dps="docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'"
 
 # --- Update Function ---
 # Updates all zsh tools and plugins
