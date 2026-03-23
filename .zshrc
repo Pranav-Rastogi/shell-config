@@ -113,6 +113,13 @@ fi
 alias mv="mv -i"
 alias rm="rm -i"
 
+# --- Clipboard Helper for Remote Sessions ---
+pbcopy_remote() {
+  local data
+  data=$(cat | base64 | tr -d '\n')
+  printf '\e]52;c;%s\a' "$data"
+}
+
 # --- Custom Docker/Backend Aliases ---
 # dlogs: Tail logs for a specific container (fuzzy find if no arg)
 dlogs() {
