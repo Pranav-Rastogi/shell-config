@@ -49,6 +49,60 @@ alias la="ls -lah"       # List all (including hidden)
 alias l="ls -CF"
 alias grep="grep --color=auto"
 
+# 3b. Quick network aliases
+alias myip="curl -fsSL ifconfig.me"
+myiip() {
+    # Prefer Linux-style output when available; fall back to common macOS interfaces.
+    hostname -I 2>/dev/null || ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null
+}
+
+# 3c. File extension helpers
+_bytes_to_human() {
+    awk -v bytes="$1" 'function human(x){
+        s="B KB MB GB TB PB";
+        split(s,u," ");
+        i=1;
+        while (x>=1024 && i<6) {x/=1024; i++}
+        return (i==1) ? sprintf("%d %s", x, u[i]) : sprintf("%.2f %s", x, u[i])
+    } BEGIN {print human(bytes)}'
+}
+
+# filestatsext <extension> [path]
+# Example: filestatsext parquet ~/data
+filestatsext() {
+    local ext="$1"
+    local dir="${2:-.}"
+    local total=0
+    local count=0
+    local file
+    local size
+
+    if [[ -z "$ext" ]]; then
+        echo "Usage: filestatsext <extension> [path]"
+        return 1
+    fi
+
+    ext="${ext#.}"
+
+    while IFS= read -r -d '' file; do
+        size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null)
+        if [[ -n "$size" ]]; then
+            (( total += size ))
+            (( count += 1 ))
+        fi
+    done < <(find "$dir" -type f -name "*.${ext}" -print0 2>/dev/null)
+
+    echo "${count} file(s), total: $(_bytes_to_human "$total")"
+}
+
+# duh <depth> [path]
+# Example: duh 2 .
+duh() {
+    local depth="${1:-1}"
+    local dir="${2:-.}"
+    du -h -d "$depth" "$dir" 2>/dev/null | sort -hr
+}
+
 # 4. Safety (interactive mode prevents accidental deletions)
 alias cp="cp -i"
 
@@ -115,7 +169,7 @@ dcdown() {
     fi
 }
 
-alias dps="docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'"
+alias dps="docker ps --format 'table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'"
 
 # --- Update Function ---
 # Updates all zsh tools and plugins
